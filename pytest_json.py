@@ -42,7 +42,11 @@ def pytest_configure(config):
 def pytest_collection_modifyitems(session, config, items):
     """ Called third with the collected items
     """
-    pass
+    data = {
+        '_type': 'session_start',
+        'test_number': len(items)
+    }
+    print(json.dumps(data))
 
 
 def pytest_sessionstart(session):
@@ -124,6 +128,7 @@ class JsonTerminalReporter(TerminalReporter):
                 outcome = 'passed'
 
             raw_json_report = {
+                '_type': 'test_result',
                 'file': report.fspath,
                 'line': report.location[1],
                 'duration': report.duration,
