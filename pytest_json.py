@@ -131,6 +131,7 @@ class JsonTerminalReporter(TerminalReporter):
                 '_type': 'test_result',
                 'file': report.fspath,
                 'line': report.location[1],
+                'test_name': report.location[2],
                 'duration': report.duration,
                 'outcome': outcome,
                 'id': report.nodeid,
