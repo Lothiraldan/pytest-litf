@@ -155,6 +155,7 @@ class JsonTerminalReporter(TerminalReporter):
         session_duration = py.std.time.time() - self._sessionstarttime
 
         final = {
+            '_type': 'session_end',
             'total_duration': session_duration,
             'passed': self.count('passed'),
             'failed': self.count('failed', when=['call']),
