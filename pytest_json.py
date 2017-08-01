@@ -25,18 +25,27 @@ __version__ = '0.0.1'
 def pytest_addoption(parser):
     """ Called first to add additional CLI options
     """
-    pass
+    group = parser.getgroup("terminal reporting", "reporting", after="general")
+    group._addoption(
+        '--json', action="store_true",
+        dest="json", default=False,
+        help=(
+            "Activate the json output"
+        )
+    )
 
 
 @pytest.mark.trylast
 def pytest_configure(config):
     """ Call in second to configure stuff
     """
-    # Get the standard terminal reporter plugin and replace it with our own
-    standard_reporter = config.pluginmanager.getplugin('terminalreporter')
-    json_reporter = JsonTerminalReporter(standard_reporter)
-    config.pluginmanager.unregister(standard_reporter)
-    config.pluginmanager.register(json_reporter, 'terminalreporter')
+
+    if config.getvalue('json'):
+        # Get the standard terminal reporter plugin and replace it with our own
+        standard_reporter = config.pluginmanager.getplugin('terminalreporter')
+        json_reporter = JsonTerminalReporter(standard_reporter)
+        config.pluginmanager.unregister(standard_reporter)
+        config.pluginmanager.register(json_reporter, 'terminalreporter')
 
 
 def pytest_collection_modifyitems(session, config, items):
