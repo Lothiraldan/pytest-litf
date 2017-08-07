@@ -16,8 +16,6 @@ import py
 import pytest
 from _pytest.terminal import TerminalReporter
 
-from collections import defaultdict
-
 
 __version__ = '0.0.1'
 
@@ -33,7 +31,6 @@ def pytest_addoption(parser):
             "Activate the json output"
         )
     )
-
 
 @pytest.mark.trylast
 def pytest_configure(config):
@@ -95,7 +92,7 @@ class JsonTerminalReporter(TerminalReporter):
         TerminalReporter.__init__(self, reporter.config)
         self.writer = self._tw
         self.reports = []
-        self.outcomes = defaultdict(set)
+        self.reportsbyid = {}
 
     def report_collect(self, final=False):
         pass
@@ -125,32 +122,62 @@ class JsonTerminalReporter(TerminalReporter):
         # Save reports for later
         self.reports.append(report)
 
-        self.outcomes[report.nodeid].add(report.outcome)
+        self.reportsbyid.setdefault(report.nodeid, []).append(report)
 
-        # Print the report as json
         if report.when == 'teardown':
-            # Compute the final test outcome
-            outcomes = self.outcomes[report.nodeid]
-            if 'failed' in outcomes:
-                outcome = 'failed'
-            else:
-                outcome = 'passed'
-
-            raw_json_report = {
-                '_type': 'test_result',
-                'file': report.fspath,
-                'line': report.location[1],
-                'test_name': report.location[2],
-                'duration': report.duration,
-                'outcome': outcome,
-                'id': report.nodeid,
-                'stdout': report.capstdout,
-                'stderr': report.capstderr,
-            }
-            print(json.dumps(raw_json_report))
+            self.dump_json(self.reportsbyid[report.nodeid])
 
         # Save the stats
         self.stats.setdefault(report.outcome, []).append(report)
+
+    def dump_json(self, reports):
+        # Compute the final test outcome
+        outcomes = [report.outcome for report in reports]
+        if 'failed' in outcomes:
+            outcome = 'failed'
+        elif 'skipped' in outcomes:
+            outcome = 'skipped'
+        else:
+            outcome = 'passed'
+
+        # Errors
+        errors = {}
+        for report in reports:
+            if report.longrepr:
+
+                # Compute human repre
+                tw = py.io.TerminalWriter(stringio=True)
+                tw.hasmarkup = False
+                report.longrepr.toterminal(tw)
+                exc = tw.stringio.getvalue()
+                humanrepr = exc.strip()
+
+                errors[report.when] = {'humanrepr': humanrepr}
+
+        # Durations
+        total_duration = 0
+        durations = {}
+        for report in reports:
+            durations[report.when] = report.duration
+            total_duration += report.duration
+
+        report = reports[-1]
+
+        raw_json_report = {
+            '_type': 'test_result',
+            'file': report.fspath,
+            'line': report.location[1],
+            'test_name': report.location[2],
+            'duration': total_duration,
+            'durations': durations,
+            'outcome': outcome,
+            'id': report.nodeid,
+            'stdout': report.capstdout,
+            'stderr': report.capstderr,
+            'errors': errors,
+            'when': report.when
+        }
+        print(json.dumps(raw_json_report))
 
     def count(self, key, when=('call',)):
         if self.stats.get(key):
