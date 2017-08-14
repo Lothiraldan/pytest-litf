@@ -143,8 +143,7 @@ class JsonTerminalReporter(TerminalReporter):
         # Errors
         errors = {}
         for report in reports:
-            if report.longrepr:
-
+            if report.outcome == 'failed' and report.longrepr:
                 # Compute human repre
                 tw = py.io.TerminalWriter(stringio=True)
                 tw.hasmarkup = False
@@ -153,6 +152,12 @@ class JsonTerminalReporter(TerminalReporter):
                 humanrepr = exc.strip()
 
                 errors[report.when] = {'humanrepr': humanrepr}
+
+        # Skipped
+        skipped_messages = {}
+        for report in reports:
+            if report.outcome == 'skipped' and report.longrepr:
+                skipped_messages[report.when] = report.longrepr[2]
 
         # Durations
         total_duration = 0
@@ -175,7 +180,7 @@ class JsonTerminalReporter(TerminalReporter):
             'stdout': report.capstdout,
             'stderr': report.capstderr,
             'errors': errors,
-            'when': report.when
+            'skipped_messages': skipped_messages
         }
         print(json.dumps(raw_json_report))
 
