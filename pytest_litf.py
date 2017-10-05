@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-pytest_json
+pytest_litf
 ~~~~~~~~~~~
 
-py.test is a plugin for py.test that changes the default look
-and feel of py.test (e.g. progressbar, show tests that fail instantly).
+py.test litf is a plugin for py.test that output test results in Language
+Independent Test Format.
 
 :copyright: see LICENSE for details
 :license: BSD, see LICENSE for more details.
@@ -25,10 +25,10 @@ def pytest_addoption(parser):
     """
     group = parser.getgroup("terminal reporting", "reporting", after="general")
     group._addoption(
-        '--json', action="store_true",
-        dest="json", default=False,
+        '--litf', action="store_true",
+        dest="litf", default=False,
         help=(
-            "Activate the json output"
+            "Activate the litf output"
         )
     )
 
@@ -37,12 +37,12 @@ def pytest_configure(config):
     """ Call in second to configure stuff
     """
 
-    if config.getvalue('json'):
+    if config.getvalue('litf'):
         # Get the standard terminal reporter plugin and replace it with our own
         standard_reporter = config.pluginmanager.getplugin('terminalreporter')
-        json_reporter = JsonTerminalReporter(standard_reporter)
+        litf_reporter = LitfTerminalReporter(standard_reporter)
         config.pluginmanager.unregister(standard_reporter)
-        config.pluginmanager.register(json_reporter, 'terminalreporter')
+        config.pluginmanager.register(litf_reporter, 'terminalreporter')
 
 
 def pytest_collection_modifyitems(session, config, items):
@@ -87,7 +87,7 @@ def pytest_deselected(items):
     #         terminal_reporter.tests_count -= len(items)
 
 
-class JsonTerminalReporter(TerminalReporter):
+class LitfTerminalReporter(TerminalReporter):
     def __init__(self, reporter):
         TerminalReporter.__init__(self, reporter.config)
         self.writer = self._tw

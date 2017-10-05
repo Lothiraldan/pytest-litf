@@ -12,17 +12,17 @@ def read(fname):
 
 
 setup(
-    name='pytest-json',
+    name='pytest-litf',
     version='0.1.0',
     author='Boris Feld',
     author_email='lothiraldan@gmail.com',
     maintainer='Boris Feld',
     maintainer_email='lothiraldan@gmail.com',
     license='MIT',
-    url='https://github.com/lothiraldan/pytest-json',
-    description=' A pytest plugin that strean output in JSON',
+    url='https://github.com/lothiraldan/pytest-litf',
+    description=' A pytest plugin that stream output in LITF',
     long_description=read('README.rst'),
-    py_modules=['pytest_json'],
+    py_modules=['pytest_litf'],
     install_requires=['pytest>=3.1.1'],
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -43,7 +43,7 @@ setup(
     ],
     entry_points={
         'pytest11': [
-            'json = pytest_json',
+            'litf = pytest_litf',
         ],
     },
 )
