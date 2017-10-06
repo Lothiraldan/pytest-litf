@@ -46,4 +46,5 @@ setup(
             'litf = pytest_litf',
         ],
     },
+    scripts=['bin/pytest-litf'],
 )
