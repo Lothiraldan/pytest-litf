@@ -193,6 +193,30 @@ class LitfTerminalReporter(TerminalReporter):
         else:
             return 0
 
+    def pytest_collection_finish(self, session):
+        if self.config.option.collectonly:
+            for item in session.items:
+                raw_json_report = {
+                    '_type': 'test_collection',
+                    'line': item.location[1],
+                    'file': item.location[2],
+                    'test_name': item.name,
+                    'id': item.nodeid,
+                }
+                print(json.dumps(raw_json_report))
+
+            # Todo handle
+            if self.stats.get('failed'):
+                self._tw.sep("!", "collection failures")
+                for rep in self.stats.get('failed'):
+                    rep.toterminal(self._tw)
+                return 1
+            return 0
+
+        lines = self.config.hook.pytest_report_collectionfinish(
+            config=self.config, startdir=self.startdir, items=session.items)
+        self._write_report_lines_from_hooks(lines)
+
     def summary_stats(self):
         session_duration = py.std.time.time() - self._sessionstarttime
 
