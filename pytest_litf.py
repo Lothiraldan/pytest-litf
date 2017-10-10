@@ -10,6 +10,7 @@ Independent Test Format.
 :license: BSD, see LICENSE for more details.
 """
 from __future__ import unicode_literals
+import os
 import json
 
 import py
@@ -199,7 +200,7 @@ class LitfTerminalReporter(TerminalReporter):
                 raw_json_report = {
                     '_type': 'test_collection',
                     'line': item.location[1],
-                    'file': item.location[2],
+                    'file': item.fspath.relto(os.getcwd()),
                     'test_name': item.name,
                     'id': item.nodeid,
                 }
