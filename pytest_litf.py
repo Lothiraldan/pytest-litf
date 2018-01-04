@@ -142,6 +142,7 @@ class LitfTerminalReporter(TerminalReporter):
             outcome = 'passed'
 
         # Errors
+        error = ""
         errors = {}
         for report in reports:
             if report.outcome == 'failed' and report.longrepr:
@@ -153,6 +154,10 @@ class LitfTerminalReporter(TerminalReporter):
                 humanrepr = exc.strip()
 
                 errors[report.when] = {'humanrepr': humanrepr}
+
+                # Take the first error
+                if not error:
+                    error = humanrepr
 
         # Skipped
         skipped_messages = {}
@@ -180,7 +185,7 @@ class LitfTerminalReporter(TerminalReporter):
             'id': report.nodeid,
             'stdout': report.capstdout,
             'stderr': report.capstderr,
-            'errors': errors,
+            'error': {'humanrepr': error},
             'skipped_messages': skipped_messages
         }
         print(json.dumps(raw_json_report))

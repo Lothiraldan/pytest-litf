@@ -21,7 +21,7 @@ setup(
     license='MIT',
     url='https://github.com/lothiraldan/pytest-litf',
     description=' A pytest plugin that stream output in LITF',
-    long_description=read('README.rst'),
+    long_description=read('README.md'),
     py_modules=['pytest_litf'],
     install_requires=['pytest>=3.1.1'],
     classifiers=[
