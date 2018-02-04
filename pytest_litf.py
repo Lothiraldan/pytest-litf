@@ -206,7 +206,7 @@ class LitfTerminalReporter(TerminalReporter):
                     '_type': 'test_collection',
                     'line': item.location[1],
                     'file': item.fspath.relto(os.getcwd()),
-                    'test_name': item.name,
+                    'test_name': item.location[2],
                     'id': item.nodeid,
                 }
                 print(json.dumps(raw_json_report))
