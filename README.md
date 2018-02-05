@@ -3,7 +3,7 @@
 
 A pytest plugin that stream output in JSON compatible with [Language Independent Test Format](https://github.com/Lothiraldan/litf).
 
-It can be used with [Balto: BAdass Language independent Test Orchestrator](https://lothiraldan.github.io/balto/).
+It can be used with [Balto: BAlto is a Language independent Test Orchestrator](https://lothiraldan.github.io/balto/).
 
 --------------
 
