@@ -11,7 +11,7 @@ files = args.get("files", [])
 nodeids = args.get("nodeids", [])
 
 # Create the command line to launch
-cmd = ["pytest", "--litf"]
+cmd = ["pytest", "--litf", "--fulltrace", "--rootdir=."]
 
 if collect_only:
     cmd.append("--collectonly")
