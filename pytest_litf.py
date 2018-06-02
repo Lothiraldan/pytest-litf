@@ -109,6 +109,7 @@ class LitfTerminalReporter(TerminalReporter):
         self._numcollected += len(items)
 
     def pytest_sessionstart(self, session):
+        self._session = session
         self._sessionstarttime = py.std.time.time()
 
     def write_fspath_result(self, fspath, res):
