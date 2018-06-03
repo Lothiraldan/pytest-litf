@@ -14,7 +14,7 @@ def read(fname):
 
 setup(
     name="pytest-litf",
-    version="0.1.0",
+    version="0.1.1",
     author="Boris Feld",
     author_email="lothiraldan@gmail.com",
     maintainer="Boris Feld",
@@ -23,6 +23,7 @@ setup(
     url="https://github.com/lothiraldan/pytest-litf",
     description="A pytest plugin that stream output in LITF format",
     long_description=read("README.md"),
+    long_description_content_type="text/markdown",
     py_modules=["pytest_litf"],
     install_requires=["pytest>=3.1.1"],
     classifiers=[
