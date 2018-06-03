@@ -1,4 +1,4 @@
-# pytest-json
+# pytest-litf
 
 
 A pytest plugin that stream output in JSON compatible with [Language Independent Test Format](https://github.com/Lothiraldan/litf).
