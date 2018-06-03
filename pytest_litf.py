@@ -10,15 +10,16 @@ Independent Test Format.
 :license: BSD, see LICENSE for more details.
 """
 from __future__ import unicode_literals
-import os
+
 import json
+import os
 
 import py
+
 import pytest
 from _pytest.terminal import TerminalReporter
 
-
-__version__ = '0.0.1'
+__version__ = "0.0.1"
 
 
 def pytest_addoption(parser):
@@ -26,39 +27,38 @@ def pytest_addoption(parser):
     """
     group = parser.getgroup("terminal reporting", "reporting", after="general")
     group._addoption(
-        '--litf', action="store_true",
-        dest="litf", default=False,
-        help=(
-            "Activate the litf output"
-        )
+        "--litf",
+        action="store_true",
+        dest="litf",
+        default=False,
+        help=("Activate the litf output"),
     )
+
 
 @pytest.mark.trylast
 def pytest_configure(config):
     """ Call in second to configure stuff
     """
 
-    if config.getvalue('litf'):
+    if config.getvalue("litf"):
         # Get the standard terminal reporter plugin and replace it with our own
-        standard_reporter = config.pluginmanager.getplugin('terminalreporter')
+        standard_reporter = config.pluginmanager.getplugin("terminalreporter")
         litf_reporter = LitfTerminalReporter(standard_reporter)
         config.pluginmanager.unregister(standard_reporter)
-        config.pluginmanager.register(litf_reporter, 'terminalreporter')
+        config.pluginmanager.register(litf_reporter, "terminalreporter")
 
 
 def pytest_collection_modifyitems(session, config, items):
     """ Called third with the collected items
     """
-    data = {
-        '_type': 'session_start',
-        'test_number': len(items)
-    }
+    data = {"_type": "session_start", "test_number": len(items)}
     print(json.dumps(data))
 
 
 def pytest_sessionstart(session):
     """ Called fourth to read config and setup global variables
     """
+
 
 ## XDIST, matrix style?
 # try:
@@ -126,7 +126,7 @@ class LitfTerminalReporter(TerminalReporter):
 
         self.reportsbyid.setdefault(report.nodeid, []).append(report)
 
-        if report.when == 'teardown':
+        if report.when == "teardown":
             self.dump_json(self.reportsbyid[report.nodeid])
 
         # Save the stats
@@ -135,18 +135,18 @@ class LitfTerminalReporter(TerminalReporter):
     def dump_json(self, reports):
         # Compute the final test outcome
         outcomes = [report.outcome for report in reports]
-        if 'failed' in outcomes:
-            outcome = 'failed'
-        elif 'skipped' in outcomes:
-            outcome = 'skipped'
+        if "failed" in outcomes:
+            outcome = "failed"
+        elif "skipped" in outcomes:
+            outcome = "skipped"
         else:
-            outcome = 'passed'
+            outcome = "passed"
 
         # Errors
         error = ""
         errors = {}
         for report in reports:
-            if report.outcome == 'failed' and report.longrepr:
+            if report.outcome == "failed" and report.longrepr:
                 # Compute human repre
                 tw = py.io.TerminalWriter(stringio=True)
                 tw.hasmarkup = False
@@ -154,7 +154,7 @@ class LitfTerminalReporter(TerminalReporter):
                 exc = tw.stringio.getvalue()
                 humanrepr = exc.strip()
 
-                errors[report.when] = {'humanrepr': humanrepr}
+                errors[report.when] = {"humanrepr": humanrepr}
 
                 # Take the first error
                 if not error:
@@ -163,7 +163,7 @@ class LitfTerminalReporter(TerminalReporter):
         # Skipped
         skipped_messages = {}
         for report in reports:
-            if report.outcome == 'skipped' and report.longrepr:
+            if report.outcome == "skipped" and report.longrepr:
                 skipped_messages[report.when] = report.longrepr[2]
 
         # Durations
@@ -175,28 +175,33 @@ class LitfTerminalReporter(TerminalReporter):
 
         report = reports[-1]
 
+        print("FS PATH", report.fspath, report.nodeid, os.getcwd())
+
         raw_json_report = {
-            '_type': 'test_result',
-            'file': report.fspath,
-            'line': report.location[1],
-            'test_name': report.location[2],
-            'duration': total_duration,
-            'durations': durations,
-            'outcome': outcome,
-            'id': report.nodeid,
-            'stdout': report.capstdout,
-            'stderr': report.capstderr,
-            'error': {'humanrepr': error},
-            'skipped_messages': skipped_messages
+            "_type": "test_result",
+            "file": report.fspath,
+            "line": report.location[1],
+            "test_name": report.location[2],
+            "duration": total_duration,
+            "durations": durations,
+            "outcome": outcome,
+            "id": report.nodeid,
+            "stdout": report.capstdout,
+            "stderr": report.capstderr,
+            "error": {"humanrepr": error},
+            "skipped_messages": skipped_messages,
         }
         print(json.dumps(raw_json_report))
 
-    def count(self, key, when=('call',)):
+    def count(self, key, when=("call",)):
         if self.stats.get(key):
-            return len([
-                x for x in self.stats.get(key)
-                if not hasattr(x, 'when') or x.when in when
-            ])
+            return len(
+                [
+                    x
+                    for x in self.stats.get(key)
+                    if not hasattr(x, "when") or x.when in when
+                ]
+            )
         else:
             return 0
 
@@ -204,36 +209,37 @@ class LitfTerminalReporter(TerminalReporter):
         if self.config.option.collectonly:
             for item in session.items:
                 raw_json_report = {
-                    '_type': 'test_collection',
-                    'line': item.location[1],
-                    'file': item.fspath.relto(os.getcwd()),
-                    'test_name': item.location[2],
-                    'id': item.nodeid,
+                    "_type": "test_collection",
+                    "line": item.location[1],
+                    "file": item.fspath.relto(os.getcwd()),
+                    "test_name": item.location[2],
+                    "id": item.nodeid,
                 }
                 print(json.dumps(raw_json_report))
 
             # Todo handle
-            if self.stats.get('failed'):
+            if self.stats.get("failed"):
                 self._tw.sep("!", "collection failures")
-                for rep in self.stats.get('failed'):
+                for rep in self.stats.get("failed"):
                     rep.toterminal(self._tw)
                 return 1
             return 0
 
         lines = self.config.hook.pytest_report_collectionfinish(
-            config=self.config, startdir=self.startdir, items=session.items)
+            config=self.config, startdir=self.startdir, items=session.items
+        )
         self._write_report_lines_from_hooks(lines)
 
     def summary_stats(self):
         session_duration = py.std.time.time() - self._sessionstarttime
 
         final = {
-            '_type': 'session_end',
-            'total_duration': session_duration,
-            'passed': self.count('passed'),
-            'failed': self.count('failed', when=['call']),
-            'error': self.count('failed', when=['setup', 'teardown']),
-            'skipped': self.count('skipped', when=['call', 'setup', 'teardown'])
+            "_type": "session_end",
+            "total_duration": session_duration,
+            "passed": self.count("passed"),
+            "failed": self.count("failed", when=["call"]),
+            "error": self.count("failed", when=["setup", "teardown"]),
+            "skipped": self.count("skipped", when=["call", "setup", "teardown"]),
         }
 
         print(json.dumps(final))
