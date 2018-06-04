@@ -19,7 +19,7 @@ import py
 import pytest
 from _pytest.terminal import TerminalReporter
 
-__version__ = "0.0.1"
+__version__ = "0.1.2"
 
 
 def pytest_addoption(parser):
@@ -174,8 +174,6 @@ class LitfTerminalReporter(TerminalReporter):
             total_duration += report.duration
 
         report = reports[-1]
-
-        print("FS PATH", report.fspath, report.nodeid, os.getcwd())
 
         raw_json_report = {
             "_type": "test_result",

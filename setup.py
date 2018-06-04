@@ -14,7 +14,7 @@ def read(fname):
 
 setup(
     name="pytest-litf",
-    version="0.1.1",
+    version="0.1.2",
     author="Boris Feld",
     author_email="lothiraldan@gmail.com",
     maintainer="Boris Feld",
