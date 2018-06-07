@@ -40,6 +40,10 @@ def pytest_configure(config):
     """ Call in second to configure stuff
     """
 
+    # Force the rootdir to have stable file names and node ids between
+    # collection and run
+    config.rootdir = os.getcwd()
+
     if config.getvalue("litf"):
         # Get the standard terminal reporter plugin and replace it with our own
         standard_reporter = config.pluginmanager.getplugin("terminalreporter")
