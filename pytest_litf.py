@@ -83,7 +83,7 @@ def pytest_sessionstart(session):
 
 def pytest_deselected(items):
     """ Update tests_count to not include deselected tests """
-    print("pytest_deselected", items, len(items))
+    # print("pytest_deselected", items, len(items))
     # if len(items) > 0:
     #     pluginmanager = items[0].config.pluginmanager
     #     terminal_reporter = pluginmanager.getplugin('terminalreporter')
