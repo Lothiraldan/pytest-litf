@@ -1,0 +1,18 @@
+repos:
+-   repo: https://github.com/asottile/seed-isort-config
+    rev: v1.0.0
+    hooks:
+    -   id: seed-isort-config
+        stages: [manual]
+-   repo: https://github.com/pre-commit/mirrors-isort
+    rev: v4.3.4
+    hooks:
+    -   id: isort
+        stages: [manual]
+-   repo: https://github.com/ambv/black
+    rev: 51b3b2624d4b1e4608eb9addd7d292cc5174a047
+    files: comet-client-lib/**/*.py
+    hooks:
+    - id: black
+      args: [--safe]
+python_version: python3.6
