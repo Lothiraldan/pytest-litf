@@ -15,7 +15,6 @@ import json
 import os
 
 import py
-
 import pytest
 from _pytest.terminal import TerminalReporter
 
@@ -55,8 +54,9 @@ def pytest_configure(config):
 def pytest_collection_modifyitems(session, config, items):
     """ Called third with the collected items
     """
-    data = {"_type": "session_start", "test_number": len(items)}
-    print(json.dumps(data))
+    if config.getvalue("litf"):
+        data = {"_type": "session_start", "test_number": len(items)}
+        print(json.dumps(data))
 
 
 def pytest_sessionstart(session):
@@ -64,35 +64,13 @@ def pytest_sessionstart(session):
     """
 
 
-## XDIST, matrix style?
-# try:
-#     import xdist
-# except ImportError:
-#     pass
-# else:
-#     from distutils.version import LooseVersion
-#     xdist_version = LooseVersion(xdist.__version__)
-#     if xdist_version >= LooseVersion("1.14"):
-#         def pytest_xdist_node_collection_finished(node, ids):
-#             terminal_reporter = node.config.pluginmanager.getplugin(
-#                 'terminalreporter'
-#             )
-#             if terminal_reporter:
-#                 terminal_reporter.tests_count = len(ids)
-
-
 def pytest_deselected(items):
     """ Update tests_count to not include deselected tests """
-    # print("pytest_deselected", items, len(items))
-    # if len(items) > 0:
-    #     pluginmanager = items[0].config.pluginmanager
-    #     terminal_reporter = pluginmanager.getplugin('terminalreporter')
-    #     if (hasattr(terminal_reporter, 'tests_count')
-    #             and terminal_reporter.tests_count > 0):
-    #         terminal_reporter.tests_count -= len(items)
+    pass
 
 
 class LitfTerminalReporter(TerminalReporter):
+
     def __init__(self, reporter):
         TerminalReporter.__init__(self, reporter.config)
         self.writer = self._tw
@@ -204,6 +182,7 @@ class LitfTerminalReporter(TerminalReporter):
                     if not hasattr(x, "when") or x.when in when
                 ]
             )
+
         else:
             return 0
 
@@ -225,6 +204,7 @@ class LitfTerminalReporter(TerminalReporter):
                 for rep in self.stats.get("failed"):
                     rep.toterminal(self._tw)
                 return 1
+
             return 0
 
         lines = self.config.hook.pytest_report_collectionfinish(
