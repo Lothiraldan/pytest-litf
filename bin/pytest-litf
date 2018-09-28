@@ -16,10 +16,10 @@ cmd = ["pytest", "--litf", "--fulltrace"]
 if collect_only:
     cmd.append("--collectonly")
 
+if nodeids:
+    cmd.extend(nodeids)
 if files:
     cmd.extend(files)
-elif nodeids:
-    cmd.extend(nodeids)
 
 # Replace current process with the cmd
 os.execvp("pytest", cmd)
