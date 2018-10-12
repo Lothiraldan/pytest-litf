@@ -18,7 +18,7 @@ def run(args):
     nodeids = config.get("nodeids", [])
 
     # Create the command line to launch
-    cmd = ["pytest", "--litf", "--fulltrace"]
+    cmd = ["pytest", "--litf", "--fulltrace", "--capture=sys"]
 
     if collect_only:
         cmd.append("--collectonly")
