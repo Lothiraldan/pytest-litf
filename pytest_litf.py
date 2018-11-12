@@ -169,6 +169,13 @@ class LitfTerminalReporter(TerminalReporter):
 
         report = reports[-1]
 
+        # Get logs reports
+        logs = ""
+
+        for secname, content in report.sections:
+            if secname == "Captured log call":
+                logs = content
+
         raw_json_report = {
             "_type": "test_result",
             "file": report.fspath,
@@ -181,6 +188,7 @@ class LitfTerminalReporter(TerminalReporter):
             "stdout": report.capstdout,
             "stderr": report.capstderr,
             "error": {"humanrepr": error},
+            "logs": logs,
             "skipped_messages": skipped_messages,
         }
         output(raw_json_report)
