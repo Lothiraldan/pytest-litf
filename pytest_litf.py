@@ -13,6 +13,7 @@ from __future__ import unicode_literals
 
 import json
 import os
+import sys
 
 import py
 import pytest
@@ -50,12 +51,24 @@ def pytest_configure(config):
         config.pluginmanager.register(litf_reporter, "terminalreporter")
 
 
+def output(json_data):
+    """ A centralized function to print litf json-lines
+    """
+    # In case of some test printing stuff on stdout without a newline, write a
+    # newline
+    sys.stdout.write("\n")
+    json.dump(json_data, sys.stdout)
+    sys.stdout.write("\n")
+    # Flush the output to avoid buffering issues
+    sys.stdout.flush()
+
+
 def pytest_collection_modifyitems(session, config, items):
     """ Called third with the collected items
     """
     if config.getvalue("litf"):
         data = {"_type": "session_start", "test_number": len(items)}
-        print(json.dumps(data))
+        output(data)
 
 
 def pytest_sessionstart(session):
@@ -170,7 +183,7 @@ class LitfTerminalReporter(TerminalReporter):
             "error": {"humanrepr": error},
             "skipped_messages": skipped_messages,
         }
-        print(json.dumps(raw_json_report))
+        output(raw_json_report)
 
     def count(self, key, when=("call",)):
         if self.stats.get(key):
@@ -195,7 +208,7 @@ class LitfTerminalReporter(TerminalReporter):
                     "test_name": item.location[2],
                     "id": item.nodeid,
                 }
-                print(json.dumps(raw_json_report))
+                output(raw_json_report)
 
             # Todo handle
             if self.stats.get("failed"):
@@ -223,7 +236,7 @@ class LitfTerminalReporter(TerminalReporter):
             "skipped": self.count("skipped", when=["call", "setup", "teardown"]),
         }
 
-        print(json.dumps(final))
+        output(final)
 
     def summary_failures(self):
         # Prevent failure summary from being shown since we already
