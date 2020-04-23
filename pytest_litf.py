@@ -82,7 +82,6 @@ def pytest_deselected(items):
 
 
 class LitfTerminalReporter(TerminalReporter):
-
     def __init__(self, reporter):
         TerminalReporter.__init__(self, reporter.config)
         self.writer = self._tw
@@ -182,7 +181,7 @@ class LitfTerminalReporter(TerminalReporter):
         raw_json_report = {
             "_type": "test_result",
             "file": report.fspath,
-            "line": report.location[1],  # Pytest lineno are 0-based
+            "line": report.location[1] + 1,  # Pytest lineno are 0-based
             "test_name": report.location[2],
             "duration": total_duration,
             "durations": durations,
