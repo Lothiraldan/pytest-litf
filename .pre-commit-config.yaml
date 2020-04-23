@@ -9,10 +9,13 @@ repos:
     hooks:
     -   id: isort
         stages: [manual]
--   repo: https://github.com/ambv/black
-    rev: 51b3b2624d4b1e4608eb9addd7d292cc5174a047
-    files: comet-client-lib/**/*.py
+-   repo: https://github.com/psf/black
+    rev: 19.10b0
+    files: "*.py"
     hooks:
     - id: black
+      language_version: python3.7
       args: [--safe]
-python_version: python3.6
+
+default_language_version:
+    python: python3.7
