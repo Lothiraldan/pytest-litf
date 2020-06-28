@@ -140,7 +140,7 @@ class LitfTerminalReporter(TerminalReporter):
         errors = {}
         for report in reports:
             if report.outcome == "failed" and report.longrepr:
-                if hasattr(report.longrepr, 'toterminal'):
+                if hasattr(report.longrepr, "toterminal"):
                     # Compute human repre
                     tw = py.io.TerminalWriter(stringio=True)
                     tw.hasmarkup = False
