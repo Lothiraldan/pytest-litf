@@ -19,6 +19,16 @@ import py
 import pytest
 from _pytest.terminal import TerminalReporter
 
+try:
+    """
+    pytest > 5.4 uses own version of TerminalWriter based on py.io.TerminalWriter
+    and assumes there is a specific method TerminalWriter._write_source
+    so try load pytest version first or fallback to default one
+    """
+    from _pytest._io import TerminalWriter
+except ImportError:
+    from py.io import TerminalWriter
+
 __version__ = "0.1.2"
 
 
@@ -84,7 +94,6 @@ def pytest_deselected(items):
 class LitfTerminalReporter(TerminalReporter):
     def __init__(self, reporter):
         TerminalReporter.__init__(self, reporter.config)
-        self.writer = self._tw
         self.reports = []
         self.reportsbyid = {}
 
@@ -140,9 +149,9 @@ class LitfTerminalReporter(TerminalReporter):
         errors = {}
         for report in reports:
             if report.outcome == "failed" and report.longrepr:
-                if hasattr(report.longrepr, 'toterminal'):
+                if hasattr(report.longrepr, "toterminal"):
                     # Compute human repre
-                    tw = py.io.TerminalWriter(stringio=True)
+                    tw = TerminalWriter(stringio=True)
                     tw.hasmarkup = False
                     report.longrepr.toterminal(tw)
                     exc = tw.stringio.getvalue()
@@ -249,12 +258,22 @@ class LitfTerminalReporter(TerminalReporter):
 
         output(final)
 
+    def summary_errors(self):
+        # Prevent error summary from being shown since we already
+        # show the error instantly after error has occured.
+        pass
+
     def summary_failures(self):
         # Prevent failure summary from being shown since we already
         # show the failure instantly after failure has occured.
         pass
 
-    def summary_errors(self):
-        # Prevent error summary from being shown since we already
-        # show the error instantly after error has occured.
+    def summary_warnings(self):
+        pass
+
+    def summary_passes(self):
+        pass
+
+    def short_test_summary(self):
+        # Prevent showing the short test summary
         pass
