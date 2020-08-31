@@ -77,6 +77,7 @@ def pytest_collection_modifyitems(session, config, items):
     """ Called third with the collected items
     """
     if config.getvalue("litf"):
+        output({"_type": "litf_start", "litf_version": "0.0.1"})
         data = {"_type": "session_start", "test_number": len(items)}
         output(data)
 
