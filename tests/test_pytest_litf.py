@@ -36,6 +36,25 @@ class RegexMatch(object):
         return repr(self._regex)
 
 
+class EitherMatch(object):
+    def __init__(self, values):
+        self._values = values
+
+    def __eq__(self, other):
+        # Dictdiffer seems to call ourselves vs ourselved
+        if hasattr(other, "_vaues"):
+            return self._values == other._values
+
+        for value in self._values:
+            if other == value:
+                return True
+
+        return False
+
+    def __repr__(self):
+        return repr(self._regex)
+
+
 def _process_output(output_lines):
     json_lines = []
     invalid_lines = []
@@ -554,7 +573,12 @@ def test_pytest_litf_full_run():
             "stdout": "",
             "stderr": "",
             "error": {
-                "humanrepr": 'number = 1\n\n    @pytest.mark.parametrize("number", list(range(3)))\n    def test_fixtures(number):\n>       assert number % 2 == 0\nE       assert 1 == 0\nE         +1\nE         -0\n\ntest_func.py:14: AssertionError'
+                "humanrepr": EitherMatch(
+                    [
+                        'number = 1\n\n    @pytest.mark.parametrize("number", list(range(3)))\n    def test_fixtures(number):\n>       assert number % 2 == 0\nE       assert 1 == 0\nE         +1\nE         -0\n\ntest_func.py:14: AssertionError',
+                        'number = 1\n\n    @pytest.mark.parametrize("number", list(range(3)))\n    def test_fixtures(number):\n>       assert number % 2 == 0\nE       assert 1 == 0\nE         -1\nE         +0\n\ntest_func.py:14: AssertionError',
+                    ]
+                )
             },
             "logs": "",
             "skipped_messages": {},
