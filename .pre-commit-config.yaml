@@ -14,5 +14,7 @@ repos:
     files: "*.py"
     hooks:
     - id: black
-      language_version: python3.7
       args: [--safe]
+
+default_language_version:
+    python: python3.7
