@@ -4,6 +4,7 @@ import json
 import subprocess
 
 import dictdiffer
+from pytest_litf import LITF_VERSION
 
 PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEST_DIR = os.path.join(PACKAGE_DIR, "..", "example_dir")
@@ -30,6 +31,25 @@ class RegexMatch(object):
             return self._regex == other._regex
 
         return re.match(self._regex, other)
+
+    def __repr__(self):
+        return repr(self._regex)
+
+
+class EitherMatch(object):
+    def __init__(self, values):
+        self._values = values
+
+    def __eq__(self, other):
+        # Dictdiffer seems to call ourselves vs ourselved
+        if hasattr(other, "_vaues"):
+            return self._values == other._values
+
+        for value in self._values:
+            if other == value:
+                return True
+
+        return False
 
     def __repr__(self):
         return repr(self._regex)
@@ -64,8 +84,6 @@ def test_pytest_litf_collect_only():
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=TEST_DIR
     )
 
-    assert result.returncode == 0
-
     assert result.stderr == b""
 
     json_lines, invalid_lines = _process_output(result.stdout)
@@ -73,6 +91,7 @@ def test_pytest_litf_collect_only():
     assert invalid_lines == ["collecting ..."]
 
     expected = [
+        {"_type": "litf_start", "litf_version": LITF_VERSION},
         {"_type": "session_start", "test_number": 32},
         {
             "_type": "test_collection",
@@ -310,6 +329,8 @@ def test_pytest_litf_collect_only():
 
     assert json_lines == expected
 
+    assert result.returncode == 0
+
 
 def test_pytest_litf_full_run():
     args = {}
@@ -321,13 +342,12 @@ def test_pytest_litf_full_run():
 
     assert result.stderr == b""
 
-    assert result.returncode == 1
-
     json_lines, invalid_lines = _process_output(result.stdout)
 
     assert invalid_lines == ["collecting ..."]
 
     expected = [
+        {"_type": "litf_start", "litf_version": LITF_VERSION},
         {"_type": "session_start", "test_number": 32},
         {
             "_type": "test_result",
@@ -553,7 +573,13 @@ def test_pytest_litf_full_run():
             "stdout": "",
             "stderr": "",
             "error": {
-                "humanrepr": 'number = 1\n\n    @pytest.mark.parametrize("number", list(range(3)))\n    def test_fixtures(number):\n>       assert number % 2 == 0\nE       assert 1 == 0\nE         +1\nE         -0\n\ntest_func.py:14: AssertionError'
+                "humanrepr": EitherMatch(
+                    # Diff order seems to change with pytest 5.4.0
+                    [
+                        'number = 1\n\n    @pytest.mark.parametrize("number", list(range(3)))\n    def test_fixtures(number):\n>       assert number % 2 == 0\nE       assert 1 == 0\nE         +1\nE         -0\n\ntest_func.py:14: AssertionError',
+                        'number = 1\n\n    @pytest.mark.parametrize("number", list(range(3)))\n    def test_fixtures(number):\n>       assert number % 2 == 0\nE       assert 1 == 0\nE         -1\nE         +0\n\ntest_func.py:14: AssertionError',
+                    ]
+                )
             },
             "logs": "",
             "skipped_messages": {},
@@ -966,3 +992,5 @@ def test_pytest_litf_full_run():
     diff = list(dictdiffer.diff(json_lines, expected))
 
     assert diff == []
+
+    assert result.returncode == 1

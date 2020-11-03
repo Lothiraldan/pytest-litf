@@ -30,6 +30,7 @@ except ImportError:
     from py.io import TerminalWriter
 
 __version__ = "0.1.2"
+LITF_VERSION = "0.0.1"
 
 
 def pytest_addoption(parser):
@@ -50,10 +51,6 @@ def pytest_configure(config):
     """ Call in second to configure stuff
     """
     if config.getvalue("litf"):
-        # Force the rootdir to have stable file names and node ids between
-        # collection and run
-        config.rootdir = os.getcwd()
-
         # Get the standard terminal reporter plugin and replace it with our own
         standard_reporter = config.pluginmanager.getplugin("terminalreporter")
         litf_reporter = LitfTerminalReporter(standard_reporter)
@@ -77,7 +74,7 @@ def pytest_collection_modifyitems(session, config, items):
     """ Called third with the collected items
     """
     if config.getvalue("litf"):
-        output({"_type": "litf_start", "litf_version": "0.0.1"})
+        output({"_type": "litf_start", "litf_version": LITF_VERSION})
         data = {"_type": "session_start", "test_number": len(items)}
         output(data)
 
@@ -152,10 +149,11 @@ class LitfTerminalReporter(TerminalReporter):
             if report.outcome == "failed" and report.longrepr:
                 if hasattr(report.longrepr, "toterminal"):
                     # Compute human repre
-                    tw = TerminalWriter(stringio=True)
+                    stringio = py.io.TextIO()
+                    tw = TerminalWriter(stringio)
                     tw.hasmarkup = False
                     report.longrepr.toterminal(tw)
-                    exc = tw.stringio.getvalue()
+                    exc = stringio.getvalue()
                 else:
                     exc = str(report.longrepr)
                 humanrepr = exc.strip()
