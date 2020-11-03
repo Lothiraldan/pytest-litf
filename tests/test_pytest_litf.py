@@ -1,9 +1,10 @@
-import re
-import os.path
 import json
+import os.path
+import re
 import subprocess
 
 import dictdiffer
+
 from pytest_litf import LITF_VERSION
 
 PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -443,7 +444,7 @@ def test_pytest_litf_full_run():
             "line": 52,
             "test_name": "TestClassErrorSetup.test_passing",
             "duration": GreaterThan(0),
-            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0),},
+            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0)},
             "outcome": "failed",
             "id": "test_class.py::TestClassErrorSetup::test_passing",
             "stdout": "",
@@ -462,7 +463,7 @@ def test_pytest_litf_full_run():
             "line": 63,
             "test_name": "TestClassErrorSetupAndTeardown.test_passing",
             "duration": GreaterThan(0),
-            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0),},
+            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0)},
             "outcome": "failed",
             "id": "test_class.py::TestClassErrorSetupAndTeardown::test_passing",
             "stdout": "",
@@ -712,7 +713,7 @@ def test_pytest_litf_full_run():
             "line": 4,
             "test_name": "test_skip_function",
             "duration": GreaterThan(0),
-            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0),},
+            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0)},
             "outcome": "skipped",
             "id": "test_skip.py::test_skip_function",
             "stdout": "",
@@ -727,7 +728,7 @@ def test_pytest_litf_full_run():
             "line": 10,
             "test_name": "TestSkipCall.test_skip_method",
             "duration": GreaterThan(0),
-            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0),},
+            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0)},
             "outcome": "skipped",
             "id": "test_skip.py::TestSkipCall::test_skip_method",
             "stdout": "",
@@ -742,7 +743,7 @@ def test_pytest_litf_full_run():
             "line": 17,
             "test_name": "TestSkipClass.test_skipped_1",
             "duration": GreaterThan(0),
-            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0),},
+            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0)},
             "outcome": "skipped",
             "id": "test_skip.py::TestSkipClass::test_skipped_1",
             "stdout": "",
@@ -757,7 +758,7 @@ def test_pytest_litf_full_run():
             "line": 20,
             "test_name": "TestSkipClass.test_skipped_2",
             "duration": GreaterThan(0),
-            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0),},
+            "durations": {"setup": GreaterThan(0), "teardown": GreaterThan(0)},
             "outcome": "skipped",
             "id": "test_skip.py::TestSkipClass::test_skipped_2",
             "stdout": "",
