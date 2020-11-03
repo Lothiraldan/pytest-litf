@@ -65,8 +65,6 @@ def test_pytest_litf_collect_only():
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=TEST_DIR
     )
 
-    assert result.returncode == 0
-
     assert result.stderr == b""
 
     json_lines, invalid_lines = _process_output(result.stdout)
@@ -312,6 +310,8 @@ def test_pytest_litf_collect_only():
 
     assert json_lines == expected
 
+    assert result.returncode == 0
+
 
 def test_pytest_litf_full_run():
     args = {}
@@ -322,8 +322,6 @@ def test_pytest_litf_full_run():
     )
 
     assert result.stderr == b""
-
-    assert result.returncode == 1
 
     json_lines, invalid_lines = _process_output(result.stdout)
 
@@ -969,3 +967,5 @@ def test_pytest_litf_full_run():
     diff = list(dictdiffer.diff(json_lines, expected))
 
     assert diff == []
+
+    assert result.returncode == 1

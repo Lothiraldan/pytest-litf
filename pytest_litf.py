@@ -153,10 +153,11 @@ class LitfTerminalReporter(TerminalReporter):
             if report.outcome == "failed" and report.longrepr:
                 if hasattr(report.longrepr, "toterminal"):
                     # Compute human repre
-                    tw = TerminalWriter(stringio=True)
+                    stringio = py.io.TextIO()
+                    tw = TerminalWriter(stringio)
                     tw.hasmarkup = False
                     report.longrepr.toterminal(tw)
-                    exc = tw.stringio.getvalue()
+                    exc = stringio.getvalue()
                 else:
                     exc = str(report.longrepr)
                 humanrepr = exc.strip()
