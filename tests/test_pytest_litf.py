@@ -574,6 +574,7 @@ def test_pytest_litf_full_run():
             "stderr": "",
             "error": {
                 "humanrepr": EitherMatch(
+                    # Diff order seems to change with pytest 5.4.0
                     [
                         'number = 1\n\n    @pytest.mark.parametrize("number", list(range(3)))\n    def test_fixtures(number):\n>       assert number % 2 == 0\nE       assert 1 == 0\nE         +1\nE         -0\n\ntest_func.py:14: AssertionError',
                         'number = 1\n\n    @pytest.mark.parametrize("number", list(range(3)))\n    def test_fixtures(number):\n>       assert number % 2 == 0\nE       assert 1 == 0\nE         -1\nE         +0\n\ntest_func.py:14: AssertionError',
