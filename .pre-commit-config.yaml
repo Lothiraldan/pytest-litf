@@ -1,20 +1,20 @@
 repos:
 -   repo: https://github.com/asottile/seed-isort-config
-    rev: v1.0.0
+    rev: v2.1.1
     hooks:
     -   id: seed-isort-config
-        stages: [manual]
--   repo: https://github.com/pre-commit/mirrors-isort
-    rev: v4.3.4
+-   repo: https://github.com/timothycrosley/isort
+    rev: 4.3.21
+    types: [python]
     hooks:
     -   id: isort
-        stages: [manual]
 -   repo: https://github.com/psf/black
     rev: 19.10b0
-    files: "*.py"
     hooks:
     - id: black
       args: [--safe]
-
-default_language_version:
-    python: python3.7
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.1
+    hooks:
+    -   id: flake8
+        args: ['--config=.flake8']
