@@ -30,6 +30,7 @@ except ImportError:
     from py.io import TerminalWriter
 
 __version__ = "0.1.2"
+LITF_VERSION = "0.0.1"
 
 
 def pytest_addoption(parser):
@@ -77,7 +78,7 @@ def pytest_collection_modifyitems(session, config, items):
     """ Called third with the collected items
     """
     if config.getvalue("litf"):
-        output({"_type": "litf_start", "litf_version": "0.0.1"})
+        output({"_type": "litf_start", "litf_version": LITF_VERSION})
         data = {"_type": "session_start", "test_number": len(items)}
         output(data)
 

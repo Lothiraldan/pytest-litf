@@ -4,6 +4,7 @@ import json
 import subprocess
 
 import dictdiffer
+from pytest_litf import LITF_VERSION
 
 PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEST_DIR = os.path.join(PACKAGE_DIR, "..", "example_dir")
@@ -73,6 +74,7 @@ def test_pytest_litf_collect_only():
     assert invalid_lines == ["collecting ..."]
 
     expected = [
+        {"_type": "litf_start", "litf_version": LITF_VERSION},
         {"_type": "session_start", "test_number": 32},
         {
             "_type": "test_collection",
@@ -328,6 +330,7 @@ def test_pytest_litf_full_run():
     assert invalid_lines == ["collecting ..."]
 
     expected = [
+        {"_type": "litf_start", "litf_version": LITF_VERSION},
         {"_type": "session_start", "test_number": 32},
         {
             "_type": "test_result",
