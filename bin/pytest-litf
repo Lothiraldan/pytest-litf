@@ -13,6 +13,11 @@ nodeids = args.get("nodeids", [])
 # Create the command line to launch
 cmd = ["pytest", "--litf", "-vvv"]
 
+# Force the rootdir to have stable file names and node ids between
+# collection and run
+cmd.append("--rootdir=%s" % os.getcwd())
+
+
 if collect_only:
     cmd.append("--collectonly")
 
