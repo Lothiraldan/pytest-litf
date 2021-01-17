@@ -308,14 +308,14 @@ def test_pytest_litf_collect_only():
             "_type": "test_collection",
             "file": "directory/test_file_2.py",
             "id": "directory/test_file_2.py::test_success",
-            "line": 4,
+            "line": 1,
             "test_name": "test_success",
         },
         {
             "_type": "test_collection",
             "file": "directory/test_func.py",
             "id": "directory/test_func.py::test_success",
-            "line": 4,
+            "line": 1,
             "test_name": "test_success",
         },
         {
@@ -943,7 +943,7 @@ def test_pytest_litf_full_run():
         {
             "_type": "test_result",
             "file": "directory/test_file_2.py",
-            "line": 4,
+            "line": 1,
             "test_name": "test_success",
             "duration": GreaterThan(0),
             "durations": {
@@ -962,7 +962,7 @@ def test_pytest_litf_full_run():
         {
             "_type": "test_result",
             "file": "directory/test_func.py",
-            "line": 4,
+            "line": 1,
             "test_name": "test_success",
             "duration": GreaterThan(0),
             "durations": {
