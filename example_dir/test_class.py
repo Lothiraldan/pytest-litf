@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 class TestClassPassing(object):
     def setup_method(self, method):
         pass

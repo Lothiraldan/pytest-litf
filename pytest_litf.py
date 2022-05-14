@@ -34,8 +34,7 @@ LITF_VERSION = "0.0.1"
 
 
 def pytest_addoption(parser):
-    """ Called first to add additional CLI options
-    """
+    """Called first to add additional CLI options"""
     group = parser.getgroup("terminal reporting", "reporting", after="general")
     group._addoption(
         "--litf",
@@ -48,8 +47,7 @@ def pytest_addoption(parser):
 
 @pytest.mark.trylast
 def pytest_configure(config):
-    """ Call in second to configure stuff
-    """
+    """Call in second to configure stuff"""
     if config.getvalue("litf"):
         # Get the standard terminal reporter plugin and replace it with our own
         standard_reporter = config.pluginmanager.getplugin("terminalreporter")
@@ -59,8 +57,7 @@ def pytest_configure(config):
 
 
 def output(json_data):
-    """ A centralized function to print litf json-lines
-    """
+    """A centralized function to print litf json-lines"""
     # In case of some test printing stuff on stdout without a newline, write a
     # newline
     sys.stdout.write("\n")
@@ -71,8 +68,7 @@ def output(json_data):
 
 
 def pytest_collection_modifyitems(session, config, items):
-    """ Called third with the collected items
-    """
+    """Called third with the collected items"""
     if config.getvalue("litf"):
         output({"_type": "litf_start", "litf_version": LITF_VERSION})
         data = {"_type": "session_start", "test_number": len(items)}
@@ -80,12 +76,11 @@ def pytest_collection_modifyitems(session, config, items):
 
 
 def pytest_sessionstart(session):
-    """ Called fourth to read config and setup global variables
-    """
+    """Called fourth to read config and setup global variables"""
 
 
 def pytest_deselected(items):
-    """ Update tests_count to not include deselected tests """
+    """Update tests_count to not include deselected tests"""
     pass
 
 
@@ -99,8 +94,7 @@ class LitfTerminalReporter(TerminalReporter):
         pass
 
     def pytest_collectreport(self, report):
-        """ Override to not display anything
-        """
+        """Override to not display anything"""
         if report.failed:
             self.stats.setdefault("error", []).append(report)
         elif report.skipped:
