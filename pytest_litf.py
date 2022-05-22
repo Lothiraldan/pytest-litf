@@ -13,17 +13,28 @@ from __future__ import unicode_literals
 
 import json
 import os
+import sys
 
 import py
 import pytest
 from _pytest.terminal import TerminalReporter
 
+try:
+    """
+    pytest > 5.4 uses own version of TerminalWriter based on py.io.TerminalWriter
+    and assumes there is a specific method TerminalWriter._write_source
+    so try load pytest version first or fallback to default one
+    """
+    from _pytest._io import TerminalWriter
+except ImportError:
+    from py.io import TerminalWriter
+
 __version__ = "0.1.2"
+LITF_VERSION = "0.0.1"
 
 
 def pytest_addoption(parser):
-    """ Called first to add additional CLI options
-    """
+    """Called first to add additional CLI options"""
     group = parser.getgroup("terminal reporting", "reporting", after="general")
     group._addoption(
         "--litf",
@@ -36,13 +47,8 @@ def pytest_addoption(parser):
 
 @pytest.mark.trylast
 def pytest_configure(config):
-    """ Call in second to configure stuff
-    """
+    """Call in second to configure stuff"""
     if config.getvalue("litf"):
-        # Force the rootdir to have stable file names and node ids between
-        # collection and run
-        config.rootdir = os.getcwd()
-
         # Get the standard terminal reporter plugin and replace it with our own
         standard_reporter = config.pluginmanager.getplugin("terminalreporter")
         litf_reporter = LitfTerminalReporter(standard_reporter)
@@ -50,29 +56,37 @@ def pytest_configure(config):
         config.pluginmanager.register(litf_reporter, "terminalreporter")
 
 
+def output(json_data):
+    """A centralized function to print litf json-lines"""
+    # In case of some test printing stuff on stdout without a newline, write a
+    # newline
+    sys.stdout.write("\n")
+    json.dump(json_data, sys.stdout)
+    sys.stdout.write("\n")
+    # Flush the output to avoid buffering issues
+    sys.stdout.flush()
+
+
 def pytest_collection_modifyitems(session, config, items):
-    """ Called third with the collected items
-    """
+    """Called third with the collected items"""
     if config.getvalue("litf"):
+        output({"_type": "litf_start", "litf_version": LITF_VERSION})
         data = {"_type": "session_start", "test_number": len(items)}
-        print(json.dumps(data))
+        output(data)
 
 
 def pytest_sessionstart(session):
-    """ Called fourth to read config and setup global variables
-    """
+    """Called fourth to read config and setup global variables"""
 
 
 def pytest_deselected(items):
-    """ Update tests_count to not include deselected tests """
+    """Update tests_count to not include deselected tests"""
     pass
 
 
 class LitfTerminalReporter(TerminalReporter):
-
     def __init__(self, reporter):
         TerminalReporter.__init__(self, reporter.config)
-        self.writer = self._tw
         self.reports = []
         self.reportsbyid = {}
 
@@ -80,8 +94,7 @@ class LitfTerminalReporter(TerminalReporter):
         pass
 
     def pytest_collectreport(self, report):
-        """ Override to not display anything
-        """
+        """Override to not display anything"""
         if report.failed:
             self.stats.setdefault("error", []).append(report)
         elif report.skipped:
@@ -128,11 +141,15 @@ class LitfTerminalReporter(TerminalReporter):
         errors = {}
         for report in reports:
             if report.outcome == "failed" and report.longrepr:
-                # Compute human repre
-                tw = py.io.TerminalWriter(stringio=True)
-                tw.hasmarkup = False
-                report.longrepr.toterminal(tw)
-                exc = tw.stringio.getvalue()
+                if hasattr(report.longrepr, "toterminal"):
+                    # Compute human repre
+                    stringio = py.io.TextIO()
+                    tw = TerminalWriter(stringio)
+                    tw.hasmarkup = False
+                    report.longrepr.toterminal(tw)
+                    exc = stringio.getvalue()
+                else:
+                    exc = str(report.longrepr)
                 humanrepr = exc.strip()
 
                 errors[report.when] = {"humanrepr": humanrepr}
@@ -156,10 +173,17 @@ class LitfTerminalReporter(TerminalReporter):
 
         report = reports[-1]
 
+        # Get logs reports
+        logs = ""
+
+        for secname, content in report.sections:
+            if secname == "Captured log call":
+                logs = content
+
         raw_json_report = {
             "_type": "test_result",
             "file": report.fspath,
-            "line": report.location[1],
+            "line": report.location[1] + 1,  # Pytest lineno are 0-based
             "test_name": report.location[2],
             "duration": total_duration,
             "durations": durations,
@@ -168,9 +192,10 @@ class LitfTerminalReporter(TerminalReporter):
             "stdout": report.capstdout,
             "stderr": report.capstderr,
             "error": {"humanrepr": error},
+            "logs": logs,
             "skipped_messages": skipped_messages,
         }
-        print(json.dumps(raw_json_report))
+        output(raw_json_report)
 
     def count(self, key, when=("call",)):
         if self.stats.get(key):
@@ -188,14 +213,15 @@ class LitfTerminalReporter(TerminalReporter):
     def pytest_collection_finish(self, session):
         if self.config.option.collectonly:
             for item in session.items:
+
                 raw_json_report = {
                     "_type": "test_collection",
-                    "line": item.location[1],
+                    "line": item.location[1] + 1,  # Pytest lineno are 0-based
                     "file": item.fspath.relto(os.getcwd()),
                     "test_name": item.location[2],
                     "id": item.nodeid,
                 }
-                print(json.dumps(raw_json_report))
+                output(raw_json_report)
 
             # Todo handle
             if self.stats.get("failed"):
@@ -223,14 +249,24 @@ class LitfTerminalReporter(TerminalReporter):
             "skipped": self.count("skipped", when=["call", "setup", "teardown"]),
         }
 
-        print(json.dumps(final))
+        output(final)
+
+    def summary_errors(self):
+        # Prevent error summary from being shown since we already
+        # show the error instantly after error has occured.
+        pass
 
     def summary_failures(self):
         # Prevent failure summary from being shown since we already
         # show the failure instantly after failure has occured.
         pass
 
-    def summary_errors(self):
-        # Prevent error summary from being shown since we already
-        # show the error instantly after error has occured.
+    def summary_warnings(self):
+        pass
+
+    def summary_passes(self):
+        pass
+
+    def short_test_summary(self):
+        # Prevent showing the short test summary
         pass

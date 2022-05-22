@@ -18,7 +18,11 @@ def run(args):
     nodeids = config.get("nodeids", [])
 
     # Create the command line to launch
-    cmd = ["pytest", "--litf", "--fulltrace", "--capture=sys"]
+    cmd = ["pytest", "--litf", "--vvv"]
+   
+    # Force the rootdir to have stable file names and node ids between
+    # collection and run
+    cmd.append("--rootdir=%s" % os.getcwd())
 
     if collect_only:
         cmd.append("--collectonly")
@@ -30,7 +34,6 @@ def run(args):
 
     # Replace current process with the cmd
     os.execvp("pytest", cmd)
-
 
 if '__main__' == __name__:
     import argparse
