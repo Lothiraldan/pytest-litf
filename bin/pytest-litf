@@ -17,7 +17,7 @@ def run(args):
     nodeids = config.get("nodeids", [])
 
     # Create the command line to launch
-    cmd = ["pytest", "--litf", "--vvv"]
+    cmd = ["pytest", "--litf", "-vvv"]
 
     # Force the rootdir to have stable file names and node ids between
     # collection and run
