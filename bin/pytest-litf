@@ -3,11 +3,10 @@
 """Pytest-LITF launcher
 """
 
-from __future__ import print_function, absolute_import, division
+from __future__ import absolute_import, division, print_function
 
-import os
-import sys
 import json
+import os
 
 
 def run(args):
@@ -19,7 +18,7 @@ def run(args):
 
     # Create the command line to launch
     cmd = ["pytest", "--litf", "--vvv"]
-   
+
     # Force the rootdir to have stable file names and node ids between
     # collection and run
     cmd.append("--rootdir=%s" % os.getcwd())
@@ -35,10 +34,16 @@ def run(args):
     # Replace current process with the cmd
     os.execvp("pytest", cmd)
 
-if '__main__' == __name__:
+
+if "__main__" == __name__:
     import argparse
+
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('config', help='''JSON config, example: '{"collect-only": true}')''', type=json.loads)
+    parser.add_argument(
+        "config",
+        help="""JSON config, example: '{"collect-only": true}')""",
+        type=json.loads,
+    )
 
     args = parser.parse_args()
     run(args)
