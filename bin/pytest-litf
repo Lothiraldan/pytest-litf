@@ -15,9 +15,14 @@ def run(args):
     collect_only = bool(config.get("collect-only", False))
     files = config.get("files", [])
     nodeids = config.get("nodeids", [])
+    output_file = config.get("output-file", None)
 
     # Create the command line to launch
     cmd = ["pytest", "--litf", "-vvv"]
+
+    # Write the LITF output to a file instead of stdout by default
+    if output_file:
+        cmd.extend(["--litf-output-file", output_file])
 
     # Force the rootdir to have stable file names and node ids between
     # collection and run
