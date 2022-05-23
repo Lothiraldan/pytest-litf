@@ -17,7 +17,6 @@ import sys
 
 import py
 import pytest
-from _pytest.terminal import TerminalReporter
 
 try:
     """
@@ -31,6 +30,7 @@ except ImportError:
 
 __version__ = "0.1.2"
 LITF_VERSION = "0.0.1"
+GLOBAL_REPORTER = None
 
 
 def pytest_addoption(parser):
@@ -41,57 +41,71 @@ def pytest_addoption(parser):
         action="store_true",
         dest="litf",
         default=False,
-        help=("Activate the litf output"),
+        help="Activate the litf output",
+    )
+    group._addoption(
+        "--litf-output-file",
+        action="store",
+        dest="litf_output_filepath",
+        default=None,
+        help="If --lift flag is set, write LITF output to the given file instead of stdout",
     )
 
 
 @pytest.mark.trylast
 def pytest_configure(config):
     """Call in second to configure stuff"""
+    global GLOBAL_REPORTER
+
     if config.getvalue("litf"):
-        # Get the standard terminal reporter plugin and replace it with our own
+
         standard_reporter = config.pluginmanager.getplugin("terminalreporter")
-        litf_reporter = LitfTerminalReporter(standard_reporter)
-        config.pluginmanager.unregister(standard_reporter)
-        config.pluginmanager.register(litf_reporter, "terminalreporter")
 
+        litf_output_filepath = config.getvalue("litf_output_filepath")
+        if litf_output_filepath is not None:
+            # Add a file reporter to write LITF output to a given file
+            GLOBAL_REPORTER = LitfFileReporter(standard_reporter, litf_output_filepath)
+        else:
+            # Unregister the standard terminal reporter plugin and add the LITF File Reporter
+            # emiting to sys.stdout
+            GLOBAL_REPORTER = LitfFileReporter(standard_reporter)
+            config.pluginmanager.unregister(standard_reporter)
 
-def output(json_data):
-    """A centralized function to print litf json-lines"""
-    # In case of some test printing stuff on stdout without a newline, write a
-    # newline
-    sys.stdout.write("\n")
-    json.dump(json_data, sys.stdout)
-    sys.stdout.write("\n")
-    # Flush the output to avoid buffering issues
-    sys.stdout.flush()
+        config.pluginmanager.register(GLOBAL_REPORTER, "litfreporter")
 
 
 def pytest_collection_modifyitems(session, config, items):
     """Called third with the collected items"""
-    if config.getvalue("litf"):
-        output({"_type": "litf_start", "litf_version": LITF_VERSION})
+    if GLOBAL_REPORTER is not None:
+        GLOBAL_REPORTER.output({"_type": "litf_start", "litf_version": LITF_VERSION})
         data = {"_type": "session_start", "test_number": len(items)}
-        output(data)
+        GLOBAL_REPORTER.output(data)
 
 
-def pytest_sessionstart(session):
-    """Called fourth to read config and setup global variables"""
+class LitfFileReporter:
+    def __init__(self, reporter, output_filepath=None):
+        # TerminalReporter.__init__(self, reporter.config)
+        self.config = reporter.config
+        self.startdir = self.config.invocation_dir
+        self._numcollected = 0
+        self.stats = {}
 
+        if output_filepath is not None:
+            self.output_file = open(output_filepath, "w", encoding="utf-8")
+        else:
+            self.output_file = sys.stdout
 
-def pytest_deselected(items):
-    """Update tests_count to not include deselected tests"""
-    pass
-
-
-class LitfTerminalReporter(TerminalReporter):
-    def __init__(self, reporter):
-        TerminalReporter.__init__(self, reporter.config)
         self.reports = []
         self.reportsbyid = {}
 
-    def report_collect(self, final=False):
-        pass
+    def output(self, json_data):
+        # In case of some test printing stuff on stdout without a newline, write a
+        # newline
+        self.output_file.write("\n")
+        json.dump(json_data, self.output_file)
+        self.output_file.write("\n")
+        # Flush the output to avoid buffering issues
+        self.output_file.flush()
 
     def pytest_collectreport(self, report):
         """Override to not display anything"""
@@ -105,14 +119,6 @@ class LitfTerminalReporter(TerminalReporter):
     def pytest_sessionstart(self, session):
         self._session = session
         self._sessionstarttime = py.std.time.time()
-
-    def write_fspath_result(self, fspath, res):
-        return
-
-    def pytest_runtest_logstart(self, nodeid, location):
-        # Prevent locationline from being printed since we already
-        # show the module_name & in verbose mode the test name.
-        pass
 
     def pytest_runtest_logreport(self, report):
         # Save reports for later
@@ -195,7 +201,7 @@ class LitfTerminalReporter(TerminalReporter):
             "logs": logs,
             "skipped_messages": skipped_messages,
         }
-        output(raw_json_report)
+        self.output(raw_json_report)
 
     def count(self, key, when=("call",)):
         if self.stats.get(key):
@@ -221,7 +227,7 @@ class LitfTerminalReporter(TerminalReporter):
                     "test_name": item.location[2],
                     "id": item.nodeid,
                 }
-                output(raw_json_report)
+                self.output(raw_json_report)
 
             # Todo handle
             if self.stats.get("failed"):
@@ -232,12 +238,7 @@ class LitfTerminalReporter(TerminalReporter):
 
             return 0
 
-        lines = self.config.hook.pytest_report_collectionfinish(
-            config=self.config, startdir=self.startdir, items=session.items
-        )
-        self._write_report_lines_from_hooks(lines)
-
-    def summary_stats(self):
+    def pytest_sessionfinish(self, session, exitstatus):
         session_duration = py.std.time.time() - self._sessionstarttime
 
         final = {
@@ -249,24 +250,4 @@ class LitfTerminalReporter(TerminalReporter):
             "skipped": self.count("skipped", when=["call", "setup", "teardown"]),
         }
 
-        output(final)
-
-    def summary_errors(self):
-        # Prevent error summary from being shown since we already
-        # show the error instantly after error has occured.
-        pass
-
-    def summary_failures(self):
-        # Prevent failure summary from being shown since we already
-        # show the failure instantly after failure has occured.
-        pass
-
-    def summary_warnings(self):
-        pass
-
-    def summary_passes(self):
-        pass
-
-    def short_test_summary(self):
-        # Prevent showing the short test summary
-        pass
+        self.output(final)
