@@ -1,0 +1,13 @@
+name: "LITF Test Summary"
+description: "Display a summary of all tests based on LITF output files"
+author: "Boris Feld"
+inputs:
+  myInput:
+    description: "Input to use"
+    default: "world"
+outputs:
+  myOutput:
+    description: "Output from the action"
+runs:
+  using: "docker"
+  image: "Dockerfile"
