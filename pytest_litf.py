@@ -14,6 +14,7 @@ from __future__ import unicode_literals
 import json
 import os
 import sys
+from pathlib import Path
 
 import py
 import pytest
@@ -64,7 +65,12 @@ def pytest_configure(config):
         litf_output_filepath = config.getvalue("litf_output_filepath")
         if litf_output_filepath is not None:
             # Add a file reporter to write LITF output to a given file
-            GLOBAL_REPORTER = LitfFileReporter(standard_reporter, litf_output_filepath)
+            litf_output_path = Path(litf_output_filepath)
+            # Ensure the directory exists
+            litf_output_path.parent.mkdir(parents=True, exist_ok=True)
+            # And ensure we can write to that path
+            litf_output_path.touch()
+            GLOBAL_REPORTER = LitfFileReporter(standard_reporter, litf_output_path)
         else:
             # Unregister the standard terminal reporter plugin and add the LITF File Reporter
             # emiting to sys.stdout
@@ -90,6 +96,7 @@ class LitfFileReporter:
         self._numcollected = 0
         self.stats = {}
 
+        self.output_filepath = output_filepath
         if output_filepath is not None:
             self.output_file = open(output_filepath, "w", encoding="utf-8")
         else:
@@ -251,3 +258,11 @@ class LitfFileReporter:
         }
 
         self.output(final)
+
+    def pytest_terminal_summary(self, terminalreporter) -> None:
+        if self.output_filepath is not None:
+            terminalreporter.write_sep(
+                "-", f"generated LITF file: {self.output_filepath}"
+            )
+        else:
+            terminalreporter.write_sep("-", "generated LITF file: STDOUT")

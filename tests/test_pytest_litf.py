@@ -50,7 +50,8 @@ def test_pytest_litf_collect_only_stdout():
 
 
 def test_pytest_litf_collect_only_file_output(tmp_path):
-    output_filepath = tmp_path / "out.litf"
+    """Test that we can write the LITF output to a file while doing collection only"""
+    output_filepath = tmp_path / "dir" / "out.litf"
     args = {"collect-only": True, "output-file": output_filepath.as_posix()}
     cmd = ["pytest-litf", json.dumps(args)]
 
