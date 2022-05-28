@@ -1,4 +1,4 @@
-FROM python3
+FROM python:3
 
 ADD . /app
 WORKDIR /app
