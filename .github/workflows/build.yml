@@ -27,4 +27,4 @@ jobs:
       with:
         name: LITF outputs
         path: |
-          litf/*.litf.json
+          litf/*.litf.jsonl
