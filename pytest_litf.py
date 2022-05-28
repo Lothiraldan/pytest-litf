@@ -96,6 +96,7 @@ class LitfFileReporter:
         self._numcollected = 0
         self.stats = {}
 
+        self.output_filepath = output_filepath
         if output_filepath is not None:
             self.output_file = open(output_filepath, "w", encoding="utf-8")
         else:
@@ -257,3 +258,11 @@ class LitfFileReporter:
         }
 
         self.output(final)
+
+    def pytest_terminal_summary(self, terminalreporter) -> None:
+        if self.output_filepath is not None:
+            terminalreporter.write_sep(
+                "-", f"generated LITF file: {self.output_filepath}"
+            )
+        else:
+            terminalreporter.write_sep("-", "generated LITF file: STDOUT")
