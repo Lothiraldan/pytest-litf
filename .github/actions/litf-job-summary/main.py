@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import tempfile
+import time
+from typing import Dict
 from zipfile import ZipFile
 
 import requests
@@ -23,7 +25,11 @@ def list_artifacts(
         return response.json()
 
 
-def filter_artifacts(workflow_artifacts: dict[str, str], artifact_name: str):
+class ArtifactNotFoundException(Exception):
+    pass
+
+
+def filter_artifacts(workflow_artifacts: Dict[str, str], artifact_name: str):
     matching = []
 
     print("ARTIFACTS", workflow_artifacts["artifacts"])
@@ -32,7 +38,8 @@ def filter_artifacts(workflow_artifacts: dict[str, str], artifact_name: str):
         if artifact["name"] == artifact_name:
             matching.append(artifact)
 
-    print("MATCHING", matching)
+    if len(matching) == 0:
+        raise ArtifactNotFoundException()
 
     assert len(matching) == 1
 
@@ -54,6 +61,33 @@ def download_artifact(artifact_link: str, output_filepath: str):
             raise
 
 
+def get_artifact_zip(
+    github_api_url: str,
+    owner: str,
+    repo_name: str,
+    run_id: str,
+    token: str,
+    artifact_name: str,
+    output_filepath: str,
+):
+
+    for i in range(10):
+        try:
+            # First get artifact list
+            artifact_list = list_artifacts(
+                github_api_url, owner, repo_name, run_id, token
+            )
+            matching_artifact = filter_artifacts(artifact_list, artifact_name)
+            print("MATCHING ARTIFACT", matching_artifact)
+            download_artifact(
+                matching_artifact["archive_download_url"], output_filepath
+            )
+            artifact_zip = ZipFile(output_filepath)
+            return artifact_zip
+        except ArtifactNotFoundException:
+            time.sleep(1)
+
+
 def main():
     token = os.environ["INPUT_REPO-TOKEN"]
     github_api_url = os.environ["GITHUB_API_URL"]
@@ -63,17 +97,16 @@ def main():
     repo = g.get_repo(os.environ["GITHUB_REPOSITORY"])
     # workflow_run = repo.get_workflow_run(run_id)
 
-    # First get artifact list
-    artifact_list = list_artifacts(
-        github_api_url, repo.owner.login, repo.name, run_id, token
-    )
-    matching_artifact = filter_artifacts(
-        artifact_list, os.environ["INPUT_ARTIFACT-NAME"]
-    )
-    print("MATCHING ARTIFACT", matching_artifact)
     with tempfile.NamedTemporaryFile() as archive:
-        download_artifact(matching_artifact["archive_download_url"], archive.name)
-        artifact_zip = ZipFile(archive.name)
+        artifact_zip = get_artifact_zip(
+            github_api_url,
+            repo.owner.login,
+            repo.name,
+            run_id,
+            token,
+            os.environ["INPUT_ARTIFACT-NAME"],
+            archive.name,
+        )
         print("ZIPFILE", artifact_zip.namelist())
 
 
