@@ -28,3 +28,12 @@ jobs:
         name: LITF outputs
         path: |
           litf/*.litf.jsonl
+  test_summary:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/actions/litf-job-summary
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
