@@ -26,9 +26,13 @@ def list_artifacts(
 def filter_artifacts(workflow_artifacts: dict[str, str], artifact_name: str):
     matching = []
 
+    print("ARTIFACTS", workflow_artifacts["artifacts"])
+
     for artifact in workflow_artifacts["artifacts"]:
         if artifact["name"] == artifact_name:
             matching.append(artifact)
+
+    print("MATCHING", matching)
 
     assert len(matching) == 1
 
