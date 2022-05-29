@@ -45,4 +45,4 @@ jobs:
     - uses: ./.github/actions/litf-job-summary
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        input-path: /tmp/litf-outputs/
+        artifact-name: LITF outputs
