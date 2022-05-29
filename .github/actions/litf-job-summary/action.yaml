@@ -5,6 +5,9 @@ inputs:
   repo-token:
     description: "The Github access token to use to access artifacts"
     required: true
+  input-path:
+    description: "Temporary, where are the LITF output files located"
+    required: true
 outputs:
   myOutput:
     description: "Output from the action"

@@ -10,6 +10,11 @@ def main():
     workflow_run = repo.get_workflow_run(int(os.environ["GITHUB_RUN_ID"]))
     print("RUN", workflow_run)
 
+    # TODO: Download the artifact automatically
+
+    output_dir = os.environ["INPUT_INPUT-PATH"]
+    print("LS", os.listdir(output_dir))
+
 
 if __name__ == "__main__":
     main()
