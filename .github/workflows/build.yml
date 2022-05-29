@@ -41,7 +41,7 @@ jobs:
         name: LITF outputs
         path: /tmp/litf-outputs/
     - name: List
-      run: ls -Rl /tmp/
+      run: ls -Rl /tmp/litf-outputs/
     - uses: ./.github/actions/litf-job-summary
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
