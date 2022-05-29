@@ -13,6 +13,7 @@ def main():
     # TODO: Download the artifact automatically
 
     output_dir = os.environ["INPUT_INPUT-PATH"]
+    print("LS", os.listdir("/tmp"))
     print("LS", os.listdir(output_dir))
 
 

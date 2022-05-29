@@ -33,13 +33,15 @@ jobs:
     needs: build
 
     steps:
+    - uses: actions/checkout@v2
     # TODO: Temporary, the action should handle this
     - name: Download a single artifact
       uses: actions/download-artifact@v3
       with:
         name: LITF outputs
         path: /tmp/litf-outputs/
-    - uses: actions/checkout@v2
+    - name: List
+      run: ls -Rl /tmp/
     - uses: ./.github/actions/litf-job-summary
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
