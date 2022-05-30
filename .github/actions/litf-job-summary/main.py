@@ -19,6 +19,8 @@ def list_artifacts(
         "Authorization": f"token {token}",
     }
 
+    print("ARTIFACT URL", list_artifacts_url)
+
     with requests.get(list_artifacts_url, headers=headers) as response:
         response.raise_for_status()
 
@@ -86,6 +88,8 @@ def get_artifact_zip(
             return artifact_zip
         except ArtifactNotFoundException:
             time.sleep(1)
+    else:
+        raise ArtifactNotFoundException()
 
 
 def main():
