@@ -9,14 +9,18 @@ import requests
 from github import Github
 
 
+def get_api_version() -> str:
+    return "6.0-preview"
+
+
 def list_artifacts(
-    github_api_url: str, owner: str, repo: str, run_id: str, token: str
+    runtime_url: str, owner: str, repo: str, run_id: str, token: str
 ) -> dict[str, str]:
-    list_artifacts_url = (
-        f"{github_api_url}/repos/{owner}/{repo}/actions/runs/{run_id}/artifacts"
-    )
+    # Copy of https://github.com/actions/toolkit/blob/8263c4d15d3a8616851e9c7762ce46fbb4f8c552/packages/artifact/src/internal/utils.ts#L222
+    list_artifacts_url = f"{runtime_url}_apis/pipelines/workflows/{run_id}/artifacts?api-version={get_api_version()}"
     headers = {
         "Authorization": f"token {token}",
+        "Content-Type": "application/json",
     }
 
     print("ARTIFACT URL", list_artifacts_url)
@@ -64,7 +68,7 @@ def download_artifact(artifact_link: str, output_filepath: str):
 
 
 def get_artifact_zip(
-    github_api_url: str,
+    runtime_url: str,
     owner: str,
     repo_name: str,
     run_id: str,
@@ -76,9 +80,7 @@ def get_artifact_zip(
     for i in range(10):
         try:
             # First get artifact list
-            artifact_list = list_artifacts(
-                github_api_url, owner, repo_name, run_id, token
-            )
+            artifact_list = list_artifacts(runtime_url, owner, repo_name, run_id, token)
             matching_artifact = filter_artifacts(artifact_list, artifact_name)
             print("MATCHING ARTIFACT", matching_artifact)
             download_artifact(
@@ -94,7 +96,8 @@ def get_artifact_zip(
 
 def main():
     token = os.environ["INPUT_REPO-TOKEN"]
-    github_api_url = os.environ["GITHUB_API_URL"]
+    # github_api_url = os.environ["GITHUB_API_URL"]
+    runtime_url = os.environ["ACTIONS_RUNTIME_URL"]
     run_id = int(os.environ["GITHUB_RUN_ID"])
 
     g = Github(token)
@@ -103,7 +106,7 @@ def main():
 
     with tempfile.NamedTemporaryFile() as archive:
         artifact_zip = get_artifact_zip(
-            github_api_url,
+            runtime_url,
             repo.owner.login,
             repo.name,
             run_id,
