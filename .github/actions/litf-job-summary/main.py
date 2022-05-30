@@ -34,7 +34,7 @@ class ArtifactNotFoundException(Exception):
 def filter_artifacts(workflow_artifacts: Dict[str, str], artifact_name: str):
     matching = []
 
-    print("ARTIFACTS", workflow_artifacts["artifacts"])
+    print("ARTIFACTS", workflow_artifacts)
 
     for artifact in workflow_artifacts["artifacts"]:
         if artifact["name"] == artifact_name:
