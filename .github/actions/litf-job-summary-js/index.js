@@ -16,12 +16,14 @@ async function run() {
 
     const downloadResponse = await artifactClient.downloadArtifact(
       name,
-      "./litf-outputs.zip",
+      ".",
       downloadOptions
     );
 
-    yauzl.open("./litf-outputs.zip", function (err, zipfile) {
-      if (err) throw err;
+    yauzl.open(downloadResponse.downloadPath, function (err, zipfile) {
+      if (err) {
+        throw err;
+      }
       zipfile.on("error", function (err) {
         throw err;
       });
