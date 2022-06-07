@@ -1,5 +1,7 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
+const artifact = require("@actions/artifact");
+
 const fs = require("fs");
 
 async function run() {
@@ -9,6 +11,7 @@ async function run() {
     const downloadOptions = {
       createArtifactFolder: false,
     };
+    const artifactClient = artifact.create();
     const downloadResponse = await artifactClient.downloadArtifact(
       name,
       "./litf-outputs.zip",
