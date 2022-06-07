@@ -10,7 +10,7 @@ async function run() {
     const name = core.getInput("artifact-name", { required: true });
 
     const downloadOptions = {
-      createArtifactFolder: false,
+      createArtifactFolder: true,
     };
     const artifactClient = artifact.create();
 
@@ -20,6 +20,7 @@ async function run() {
       downloadOptions
     );
 
+    console.log(downloadResponse.downloadPath);
     yauzl.open(downloadResponse.downloadPath, function (err, zipfile) {
       if (err) {
         throw err;
