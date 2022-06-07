@@ -1,7 +1,6 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 const artifact = require("@actions/artifact");
-const yauzl = require("yauzl");
 
 const fs = require("fs");
 
@@ -21,26 +20,15 @@ async function run() {
     );
 
     console.log(downloadResponse.downloadPath);
-    yauzl.open(downloadResponse.downloadPath, function (err, zipfile) {
+    fs.readdir(downloadResponse.downloadPath, function (err, files) {
+      //handling error
       if (err) {
-        throw err;
+        return console.log("Unable to scan directory: " + err);
       }
-      zipfile.on("error", function (err) {
-        throw err;
-      });
-
-      zipfile.on("entry", function (entry) {
-        console.log(entry);
-        console.log(entry.getLastModDate());
-        if (!dumpContents || /\/$/.exec(entry)) {
-          return;
-        }
-        zipfile.openReadStream(entry, function (err, readStream) {
-          if (err) {
-            throw err;
-          }
-          readStream.pipe(process.stdout);
-        });
+      //listing all files using forEach
+      files.forEach(function (file) {
+        // Do whatever you want to do with the file
+        console.log(file);
       });
     });
   } catch (error) {
