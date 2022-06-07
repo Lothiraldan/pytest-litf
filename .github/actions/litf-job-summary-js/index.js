@@ -1,6 +1,7 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 const artifact = require("@actions/artifact");
+const yauzl = require("yauzl");
 
 const fs = require("fs");
 
@@ -12,21 +13,31 @@ async function run() {
       createArtifactFolder: false,
     };
     const artifactClient = artifact.create();
+
     const downloadResponse = await artifactClient.downloadArtifact(
       name,
       "./litf-outputs.zip",
       downloadOptions
     );
 
-    fs.readdir(".", function (err, files) {
-      //handling error
-      if (err) {
-        return console.log("Unable to scan directory: " + err);
-      }
-      //listing all files using forEach
-      files.forEach(function (file) {
-        // Do whatever you want to do with the file
-        console.log(file);
+    yauzl.open("./litf-outputs.zip", function (err, zipfile) {
+      if (err) throw err;
+      zipfile.on("error", function (err) {
+        throw err;
+      });
+
+      zipfile.on("entry", function (entry) {
+        console.log(entry);
+        console.log(entry.getLastModDate());
+        if (!dumpContents || /\/$/.exec(entry)) {
+          return;
+        }
+        zipfile.openReadStream(entry, function (err, readStream) {
+          if (err) {
+            throw err;
+          }
+          readStream.pipe(process.stdout);
+        });
       });
     });
   } catch (error) {
