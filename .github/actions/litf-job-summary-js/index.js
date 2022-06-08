@@ -1,6 +1,8 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 const artifact = require("@actions/artifact");
+const glob = require("glob");
+const path = require("node:path");
 
 const fs = require("fs");
 
@@ -19,18 +21,14 @@ async function run() {
       downloadOptions
     );
 
-    console.log(downloadResponse.downloadPath);
-    fs.readdir(downloadResponse.downloadPath, function (err, files) {
-      //handling error
-      if (err) {
-        return console.log("Unable to scan directory: " + err);
-      }
-      //listing all files using forEach
-      files.forEach(function (file) {
-        // Do whatever you want to do with the file
-        console.log(file);
-      });
-    });
+    const matchingFiles = glob.sync(
+      path.join(downloadResponse.downloadPath, "*.litf.jsonl")
+    );
+
+    await core.summary
+      .addHeading("Test Summary")
+      .addRaw(`Number of files: ${matchingFiles.length}`)
+      .write();
   } catch (error) {
     core.setFailed(error.message);
   }
