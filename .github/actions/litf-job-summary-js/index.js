@@ -5,6 +5,7 @@ const glob = require("glob");
 const path = require("node:path");
 const fs = require("fs");
 const os = require("os");
+const litf_parser = require("./litf_parser");
 
 async function run() {
   try {
@@ -26,14 +27,7 @@ async function run() {
     );
 
     for (filePath of matchingFiles) {
-      let fileContent = fs.readFileSync(filePath);
-      let data = fileContent
-        // Split on new line
-        .split(os.EOL)
-        // Remove blank lines
-        .filter((p) => p.trim())
-        // Parse the JSON
-        .map(JSON.parse);
+      let data = litf_parser.parseLitfJSONLFile(filePath);
 
       console.log(`File ${filePath}`);
       console.log(data);
