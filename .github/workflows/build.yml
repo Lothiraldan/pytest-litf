@@ -30,7 +30,7 @@ jobs:
         path: |
           litf/*.litf
     - name: Test Summary
-      uses: lothiraldan/test-summary-action@master
+      uses: lothiraldan/test-summary-action@7a3caa3b458110994b8981d237ac0b7ac2a21b65
       with:
         paths: "litf/*.litf"
       if: always()
