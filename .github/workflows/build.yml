@@ -27,4 +27,9 @@ jobs:
       with:
         name: LITF outputs
         path: |
-          litf/*.litf.jsonl
+          litf/*.litf
+    - name: Test Summary
+      uses: lothiraldan/test-summary-action@47e8504f69a55bf2545003cc717b94472ca76e12
+      with:
+        paths: "litf/*.litf"
+      if: always()
